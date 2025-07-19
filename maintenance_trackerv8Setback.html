@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Maintenance Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 12px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(240, 147, 251, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-info {
+            background: linear-gradient(45deg, #17a2b8, #20c997);
+            color: white;
+        }
+
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(23, 162, 184, 0.3);
+        }
+
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 12px;
+        }
+
+        .filter-group select, .filter-group input {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            min-width: 1400px;
+        }
+
+        th, td {
+            padding: 10px 6px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 10px;
+        }
+
+        th {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 9px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        tr:hover {
+            background: #f0f8ff;
+            transform: scale(1.01);
+            transition: all 0.3s ease;
+        }
+
+        .status-badge {
+            padding: 3px 6px;
+            border-radius: 12px;
+            font-size: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-progress {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .approved-yes {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .approved-no {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .approved-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .priority-high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .priority-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .priority-low {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .cost-cell {
+            font-weight: 600;
+            color: #2d5a27;
+        }
+
+        .action-btn {
+            padding: 3px 6px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-right: 2px;
+            margin-bottom: 2px;
+        }
+
+        .edit-btn {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background: #138496;
+            transform: translateY(-1px);
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+
+        .view-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .view-btn:hover {
+            background: #218838;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 2% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 95vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-header h2 {
+            color: #333;
+            font-size: 1.5em;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 10px;
+        }
+
+        .photo-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .photo-preview img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .photo-count {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 9px;
+        }
+
+        .no-photos {
+            color: #999;
+            font-size: 9px;
+            font-style: italic;
+        }
+
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .photo-gallery img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .photo-gallery img:hover {
+            transform: scale(1.05);
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .toggle-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .row-hidden {
+            display: none !important;
+        }
+
+        .import-status {
+            padding: 10px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+
+        .import-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .import-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .invoice-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 9px;
+        }
+
+        .invoice-link:hover {
+            text-decoration: underline;
+        }
+
+        .no-invoice {
+            color: #999;
+            font-size: 9px;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                min-width: auto;
+            }
+
+            .form-row, .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Property Maintenance Tracker</h1>
+            <p>Efficiently manage and track all property maintenance requests</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('maintenance')">Maintenance Jobs</button>
+            <button class="tab" onclick="switchTab('invoices')">Invoices</button>
+        </div>
+
+        <!-- Maintenance Jobs Tab -->
+        <div id="maintenanceTab" class="tab-content active">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalJobs">0</div>
+                    <div class="stat-label">Total Jobs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pendingJobs">0</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="inProgressJobs">0</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completedJobs">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="approvedJobs">0</div>
+                    <div class="stat-label">Approved</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCosts">£0</div>
+                    <div class="stat-label">Total Costs</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" onclick="openModal()">Add New Job</button>
+                <div class="file-input-wrapper">
+                    <input type="file" id="importFile" accept=".csv,.xlsx,.xls" onchange="importSpreadsheet()">
+                    <button class="btn btn-success">Import Spreadsheet</button>
+                </div>
+                <button class="btn btn-secondary" onclick="exportToCSV()">Export to CSV</button>
+                <button class="btn btn-info" onclick="toggleFilters()">Toggle Filters</button>
+                <div class="toggle-container">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="hideCompleted" onchange="toggleCompletedJobs()">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">Hide Completed Jobs</span>
+                </div>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search by name, address, or description..." onkeyup="searchTable()">
+                </div>
+            </div>
+
+            <div id="filterSection" class="filter-section" style="display: none;">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Property</label>
+                        <select id="filterProperty" onchange="applyFilters()">
+                            <option value="">All Properties</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select id="filterStatus" onchange="applyFilters()">
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Priority</label>
+                        <select id="filterPriority" onchange="applyFilters()">
+                            <option value="">All Priorities</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Approval Status</label>
+                        <select id="filterApproved" onchange="applyFilters()">
+                            <option value="">All Approvals</option>
+                            <option value="pending">Pending</option>
+                            <option value="yes">Approved</option>
+                            <option value="no">Rejected</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Date From</label>
+                        <input type="date" id="filterDateFrom" onchange="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label>Date To</label>
+                        <input type="date" id="filterDateTo" onchange="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-secondary" onclick="clearFilters()">Clear All Filters</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="importStatus"></div>
+
+            <div class="table-container">
+                <table id="maintenanceTable">
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Property</th>
+                            <th>Flat/Unit</th>
+                            <th>Contact</th>
+                            <th>Email</th>
+                            <th>Description</th>
+                            <th>Company</th>
+                            <th>Photos</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Approved</th>
+                            <th>Costs</th>
+                            <th>Invoice</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Table rows will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Invoices Tab -->
+        <div id="invoicesTab" class="tab-content">
+            <div class="controls">
+                <button class="btn btn-primary" onclick="openInvoiceModal()">Add New Invoice</button>
+                <button class="btn btn-secondary" onclick="exportInvoices()">Export Invoices</button>
+            </div>
+
+            <div class="table-container">
+                <table id="invoicesTable">
+                    <thead>
+                        <tr>
+                            <th>Invoice ID</th>
+                            <th>Job ID</th>
+                            <th>Property</th>
+                            <th>Tenant Name</th>
+                            <th>Company</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Document</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoicesTableBody">
+                        <!-- Invoice rows will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for adding/editing jobs -->
+    <div id="jobModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Maintenance Job</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="jobForm">
+                <div class="form-group">
+                    <label for="photos">Photos:</label>
+                    <input type="file" id="photos" name="photos" accept="image/*" multiple>
+                    <small>You can select multiple photos from your phone or computer</small>
+                    <div id="photoPreview" class="photo-preview"></div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Tenant Name:</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact">Contact Number:</label>
+                        <input type="tel" id="contact" name="contact" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="property">Property:</label>
+                        <select id="property" name="property" required>
+                            <option value="">Select Property</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="flatUnit">Flat/Unit No:</label>
+                        <input type="text" id="flatUnit" name="flatUnit" placeholder="e.g., Flat 1, Unit A, 2B">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" required></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="company">Company/Contractor:</label>
+                        <input type="text" id="company" name="company">
+                    </div>
+                    <div class="form-group">
+                        <label for="repairCosts">Repair Costs (£):</label>
+                        <input type="number" id="repairCosts" name="repairCosts" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                </div>
+
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label for="priority">Priority:</label>
+                        <select id="priority" name="priority" required>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status:</label>
+                        <select id="status" name="status" required>
+                            <option value="pending">Pending</option>
+                            <option value="progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="approved">Approved by Manager:</label>
+                        <select id="approved" name="approved" required>
+                            <option value="pending">Pending Approval</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="invoiceFile">Invoice/Receipt Document:</label>
+                    <input type="file" id="invoiceFile" name="invoiceFile" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                    <small>Upload invoice or receipt for this job</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Job</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for adding invoices -->
+    <div id="invoiceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Invoice</h2>
+                <span class="close" onclick="closeInvoiceModal()">&times;</span>
+            </div>
+            <form id="invoiceForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="invoiceJobId">Job ID:</label>
+                        <select id="invoiceJobId" name="invoiceJobId" required>
+                            <option value="">Select Job</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="invoiceAmount">Amount (£):</label>
+                        <input type="number" id="invoiceAmount" name="invoiceAmount" step="0.01" min="0" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="invoiceDocument">Invoice Document:</label>
+                    <input type="file" id="invoiceDocument" name="invoiceDocument" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required>
+                    <small>Upload the invoice document</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Invoice</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        let jobs = [];
+        let invoices = [];
+        let editingJobId = null;
+        let hideCompletedJobs = false;
+        let filtersVisible = false;
+
+        const properties = [
+            "5 Bedford Park, Croydon, CR02GT",
+            "40 Westway, Caterham on the Hill, Surrey, CR3 5TP",
+            "46 Westway, Caterham on the Hill, Surrey, CR3 5TP",
+            "73 - 75 Lewisham High Street, London, SE13 5JX",
+            "77 Lewisham High Street, London, SE13 5JX",
+            "Seltek House, 36-40 Westway, Caterham, Surrey, CR3 5FY",
+            "70-72 Croydon Road, Caterham, Surrey, CR3 6QD",
+            "63 Glenfarg Road, London SE6 1XN",
+            "97 Silvermere Road SE6 4QU",
+            "78 Sandhurst Road, London SE6 1XE",
+            "29 Eastdown Park Road, London SE13 5HU",
+            "25 Greenock Road, London SW16 5XG",
+            "45 West Street, London, BR1 1RE",
+            "58-60 High Street, Lewisham, London SE13 5JH"
+        ];
+
+        function initializePropertyDropdowns() {
+            const propertySelect = document.getElementById('property');
+            const filterPropertySelect = document.getElementById('filterProperty');
+            
+            properties.forEach(property => {
+                const option1 = document.createElement('option');
+                option1.value = property;
+                option1.textContent = property;
+                propertySelect.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = property;
+                option2.textContent = property;
+                filterPropertySelect.appendChild(option2);
+            });
+        }
+
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            if (tabName === 'maintenance') {
+                document.getElementById('maintenanceTab').classList.add('active');
+                document.querySelector('[onclick="switchTab(\'maintenance\')"]').classList.add('active');
+            } else if (tabName === 'invoices') {
+                document.getElementById('invoicesTab').classList.add('active');
+                document.querySelector('[onclick="switchTab(\'invoices\')"]').classList.add('active');
+                renderInvoicesTable();
+            }
+        }
+
+        function toggleFilters() {
+            filtersVisible = !filtersVisible;
+            const filterSection = document.getElementById('filterSection');
+            filterSection.style.display = filtersVisible ? 'block' : 'none';
+        }
+
+        function applyFilters() {
+            const property = document.getElementById('filterProperty').value;
+            const status = document.getElementById('filterStatus').value;
+            const priority = document.getElementById('filterPriority').value;
+            const approved = document.getElementById('filterApproved').value;
+            const dateFrom = document.getElementById('filterDateFrom').value;
+            const dateTo = document.getElementById('filterDateTo').value;
+            
+            const rows = document.querySelectorAll('#tableBody tr');
+            
+            rows.forEach(row => {
+                const cells = row.cells;
+                const jobProperty = cells[3].textContent;
+                const jobStatus = cells[11].textContent.toLowerCase();
+                const jobPriority = cells[10].textContent.toLowerCase();
+                const jobApproved = cells[12].textContent.toLowerCase();
+                const jobDate = cells[1].textContent;
+                
+                let show = true;
+                
+                if (property && !jobProperty.includes(property)) show = false;
+                if (status && !jobStatus.includes(status)) show = false;
+                if (priority && !jobPriority.includes(priority)) show = false;
+                if (approved) {
+                    if (approved === 'yes' && !jobApproved.includes('approved')) show = false;
+                    if (approved === 'no' && !jobApproved.includes('rejected')) show = false;
+                    if (approved === 'pending' && !jobApproved.includes('pending')) show = false;
+                }
+                if (dateFrom && jobDate < dateFrom) show = false;
+                if (dateTo && jobDate > dateTo) show = false;
+                
+                if (hideCompletedJobs && jobStatus.includes('completed')) show = false;
+                
+                row.style.display = show ? '' : 'none';
+            });
+        }
+
+        function clearFilters() {
+            document.getElementById('filterProperty').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterPriority').value = '';
+            document.getElementById('filterApproved').value = '';
+            document.getElementById('filterDateFrom').value = '';
+            document.getElementById('filterDateTo').value = '';
+            applyFilters();
+        }
+
+        function initializeWithSampleData() {
+            const sampleJobs = [
+                {
+                    id: 1,
+                    dateCreated: '2025-07-18',
+                    name: 'Jade Robinson',
+                    property: '5 Bedford Park, Croydon, CR02GT',
+                    flatUnit: 'Flat 8',
+                    contact: '447366557800',
+                    email: 'greenjr@live.co.uk',
+                    description: 'Quote to fill gap in entrance £200',
+                    company: 'Norbert',
+                    photos: [],
+                    priority: 'medium',
+                    status: 'pending',
+                    approved: 'pending',
+                    repairCosts: 200.00,
+                    invoiceFile: null
+                },
+                {
+                    id: 2,
+                    dateCreated: '2025-07-18',
+                    name: 'Ritchie',
+                    property: '77 Lewisham High Street, London, SE13 5JX',
+                    flatUnit: 'Flat 2',
+                    contact: '07440 485667',
+                    email: '',
+                    description: 'Paint over damp stains (Job should have been completed on the 22/05/2025)',
+                    company: 'Norbert',
+                    photos: [],
+                    priority: 'high',
+                    status: 'progress',
+                    approved: 'yes',
+                    repairCosts: 150.00,
+                    invoiceFile: null
+                },
+                {
+                    id: 3,
+                    dateCreated: '2025-07-18',
+                    name: 'Sumaya',
+                    property: '77 Lewisham High Street, London, SE13 5JX',
+                    flatUnit: 'Flat 6',
+                    contact: '07429 713739',
+                    email: '',
+                    description: 'Plaster over holes and repaint over the holes in her ceiling (Confirm that the leak has stopped)',
+                    company: 'Norbert',
+                    photos: [],
+                    priority: 'high',
+                    status: 'pending',
+                    approved: 'yes',
+                    repairCosts: 350.00,
+                    invoiceFile: null
+                },
+                {
+                    id: 4,
+                    dateCreated: '2025-07-18',
+                    name: 'Shannette',
+                    property: '29 Eastdown Park Road, London SE13 5HU',
+                    flatUnit: 'Flat 2',
+                    contact: '07572 160454',
+                    email: '',
+                    description: 'Key to be copied and given to the tenant for her nurse to access the flat. (1x E1 key and 1x Flat 2 Key) (Chargeable to the tenant)',
+                    company: '',
+                    photos: [],
+                    priority: 'medium',
+                    status: 'pending',
+                    approved: 'pending',
+                    repairCosts: 25.00,
+                    invoiceFile: null
+                },
+                {
+                    id: 5,
+                    dateCreated: '2025-07-18',
+                    name: 'Tony',
+                    property: '46 Westway, Caterham on the Hill, Surrey, CR3 5TP',
+                    flatUnit: 'Flat C',
+                    contact: '07436 496723',
+                    email: '',
+                    description: 'Tenant has complained that he has seen rats in his flat.',
+                    company: '',
+                    photos: [],
+                    priority: 'high',
+                    status: 'pending',
+                    approved: 'no',
+                    repairCosts: 0.00,
+                    invoiceFile: null
+                }
+            ];
+
+            jobs = sampleJobs;
+            renderTable();
+            updateStats();
+            populateJobDropdown();
+        }
+
+        function renderTable() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+
+            jobs.forEach(job => {
+                const row = document.createElement('tr');
+                
+                if (hideCompletedJobs && job.status === 'completed') {
+                    row.classList.add('row-hidden');
+                }
+                
+                row.innerHTML = `
+                    <td>#${job.id}</td>
+                    <td>${job.dateCreated}</td>
+                    <td>${job.name}</td>
+                    <td style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${job.property}">${job.property}</td>
+                    <td>${job.flatUnit || 'N/A'}</td>
+                    <td>${job.contact}</td>
+                    <td>${job.email}</td>
+                    <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${job.description}">${job.description}</td>
+                    <td>${job.company}</td>
+                    <td>
+                        ${job.photos && job.photos.length > 0 ? 
+                            `<span class="photo-count">${job.photos.length}</span>
+                             <button class="action-btn view-btn" onclick="viewPhotos(${job.id})">View</button>` : 
+                            '<span class="no-photos">None</span>'
+                        }
+                    </td>
+                    <td><span class="status-badge priority-${job.priority}">${job.priority}</span></td>
+                    <td><span class="status-badge status-${job.status}">${job.status}</span></td>
+                    <td><span class="status-badge approved-${job.approved}">${job.approved === 'yes' ? 'Approved' : job.approved === 'no' ? 'Rejected' : 'Pending'}</span></td>
+                    <td class="cost-cell">£${(job.repairCosts || 0).toFixed(2)}</td>
+                    <td>
+                        ${job.invoiceFile ? 
+                            `<a href="#" class="invoice-link" onclick="viewInvoice(${job.id})">View</a>` : 
+                            '<span class="no-invoice">None</span>'
+                        }
+                    </td>
+                    <td>
+                        <button class="action-btn edit-btn" onclick="editJob(${job.id})">Edit</button>
+                        <button class="action-btn delete-btn" onclick="deleteJob(${job.id})">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function renderInvoicesTable() {
+            const tableBody = document.getElementById('invoicesTableBody');
+            tableBody.innerHTML = '';
+
+            invoices.forEach(invoice => {
+                const job = jobs.find(j => j.id === invoice.jobId);
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>#${invoice.id}</td>
+                    <td>#${invoice.jobId}</td>
+                    <td style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${job ? job.property : 'N/A'}">${job ? job.property : 'N/A'}</td>
+                    <td>${job ? job.name : 'N/A'}</td>
+                    <td>${job ? job.company : 'N/A'}</td>
+                    <td class="cost-cell">£${invoice.amount.toFixed(2)}</td>
+                    <td>${invoice.date}</td>
+                    <td>
+                        <a href="#" class="invoice-link" onclick="viewInvoiceDocument(${invoice.id})">View Document</a>
+                    </td>
+                    <td>
+                        <button class="action-btn delete-btn" onclick="deleteInvoice(${invoice.id})">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function updateStats() {
+            const total = jobs.length;
+            const pending = jobs.filter(job => job.status === 'pending').length;
+            const inProgress = jobs.filter(job => job.status === 'progress').length;
+            const completed = jobs.filter(job => job.status === 'completed').length;
+            const approved = jobs.filter(job => job.approved === 'yes').length;
+            const totalCosts = jobs.reduce((sum, job) => sum + (job.repairCosts || 0), 0);
+
+            document.getElementById('totalJobs').textContent = total;
+            document.getElementById('pendingJobs').textContent = pending;
+            document.getElementById('inProgressJobs').textContent = inProgress;
+            document.getElementById('completedJobs').textContent = completed;
+            document.getElementById('approvedJobs').textContent = approved;
+            document.getElementById('totalCosts').textContent = `£${totalCosts.toFixed(2)}`;
+        }
+
+        function populateJobDropdown() {
+            const select = document.getElementById('invoiceJobId');
+            select.innerHTML = '<option value="">Select Job</option>';
+            
+            jobs.forEach(job => {
+                const option = document.createElement('option');
+                option.value = job.id;
+                option.textContent = `#${job.id} - ${job.name} (${job.property})`;
+                select.appendChild(option);
+            });
+        }
+
+        function openModal() {
+            document.getElementById('jobModal').style.display = 'block';
+            document.getElementById('modalTitle').textContent = 'Add New Maintenance Job';
+            document.getElementById('jobForm').reset();
+            editingJobId = null;
+        }
+
+        function closeModal() {
+            document.getElementById('jobModal').style.display = 'none';
+        }
+
+        function openInvoiceModal() {
+            document.getElementById('invoiceModal').style.display = 'block';
+            populateJobDropdown();
+        }
+
+        function closeInvoiceModal() {
+            document.getElementById('invoiceModal').style.display = 'none';
+        }
+
+        function editJob(jobId) {
+            const job = jobs.find(j => j.id === jobId);
+            if (job) {
+                document.getElementById('name').value = job.name;
+                document.getElementById('property').value = job.property;
+                document.getElementById('flatUnit').value = job.flatUnit || '';
+                document.getElementById('contact').value = job.contact;
+                document.getElementById('email').value = job.email;
+                document.getElementById('description').value = job.description;
+                document.getElementById('company').value = job.company;
+                document.getElementById('priority').value = job.priority;
+                document.getElementById('status').value = job.status;
+                document.getElementById('approved').value = job.approved;
+                document.getElementById('repairCosts').value = job.repairCosts || '';
+                
+                const photoPreview = document.getElementById('photoPreview');
+                photoPreview.innerHTML = '';
+                if (job.photos && job.photos.length > 0) {
+                    job.photos.forEach(photo => {
+                        const img = document.createElement('img');
+                        img.src = photo;
+                        photoPreview.appendChild(img);
+                    });
+                }
+                
+                editingJobId = jobId;
+                document.getElementById('modalTitle').textContent = 'Edit Maintenance Job';
+                document.getElementById('jobModal').style.display = 'block';
+            }
+        }
+
+        function viewPhotos(jobId) {
+            const job = jobs.find(j => j.id === jobId);
+            if (job && job.photos && job.photos.length > 0) {
+                const photoModal = document.createElement('div');
+                photoModal.className = 'modal';
+                photoModal.style.display = 'block';
+                photoModal.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Photos for ${job.name} - ${job.property}</h2>
+                            <span class="close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</span>
+                        </div>
+                        <div class="photo-gallery">
+                            ${job.photos.map(photo => `<img src="${photo}" onclick="window.open('${photo}', '_blank')">`).join('')}
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(photoModal);
+            }
+        }
+
+        function viewInvoice(jobId) {
+            const job = jobs.find(j => j.id === jobId);
+            if (job && job.invoiceFile) {
+                window.open(job.invoiceFile, '_blank');
+            }
+        }
+
+        function viewInvoiceDocument(invoiceId) {
+            const invoice = invoices.find(i => i.id === invoiceId);
+            if (invoice && invoice.document) {
+                window.open(invoice.document, '_blank');
+            }
+        }
+
+        function deleteJob(jobId) {
+            if (confirm('Are you sure you want to delete this job?')) {
+                jobs = jobs.filter(job => job.id !== jobId);
+                saveToLocalStorage();
+                renderTable();
+                updateStats();
+                populateJobDropdown();
+            }
+        }
+
+        function deleteInvoice(invoiceId) {
+            if (confirm('Are you sure you want to delete this invoice?')) {
+                invoices = invoices.filter(invoice => invoice.id !== invoiceId);
+                saveToLocalStorage();
+                renderInvoicesTable();
+            }
+        }
+
+        function importSpreadsheet() {
+            const fileInput = document.getElementById('importFile');
+            const file = fileInput.files[0];
+            
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let data;
+                    const fileName = file.name.toLowerCase();
+                    
+                    if (fileName.endsWith('.csv')) {
+                        const csvData = e.target.result;
+                        const lines = csvData.split('\n');
+                        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                        
+                        data = lines.slice(1).filter(line => line.trim()).map(line => {
+                            const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+                            const row = {};
+                            headers.forEach((header, index) => {
+                                row[header] = values[index] || '';
+                            });
+                            return row;
+                        });
+                    } else {
+                        const workbook = XLSX.read(e.target.result, { type: 'binary' });
+                        const sheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[sheetName];
+                        data = XLSX.utils.sheet_to_json(worksheet);
+                    }
+
+                    const importedJobs = data.map((row, index) => {
+                        const newId = jobs.length > 0 ? Math.max(...jobs.map(j => j.id)) + index + 1 : index + 1;
+                        
+                        return {
+                            id: newId,
+                            dateCreated: row['Date Created'] || row['dateCreated'] || new Date().toISOString().split('T')[0],
+                            name: row['Name'] || row['Tenant Name'] || row['name'] || '',
+                            property: row['Property'] || row['property'] || row['Address'] || row['address'] || '',
+                            flatUnit: row['Flat/Unit'] || row['flatUnit'] || row['Flat'] || row['Unit'] || '',
+                            contact: row['Contact'] || row['Contact Number'] || row['contact'] || '',
+                            email: row['Email'] || row['email'] || '',
+                            description: row['Description'] || row['description'] || '',
+                            company: row['Company'] || row['Company/Contractor'] || row['company'] || '',
+                            photos: [],
+                            priority: (row['Priority'] || row['priority'] || 'medium').toLowerCase(),
+                            status: (row['Status'] || row['status'] || 'pending').toLowerCase(),
+                            approved: (row['Approved'] || row['approved'] || 'pending').toLowerCase(),
+                            repairCosts: parseFloat(row['Repair Costs'] || row['repairCosts'] || row['Costs'] || 0),
+                            invoiceFile: null
+                        };
+                    });
+
+                    jobs = [...jobs, ...importedJobs];
+                    saveToLocalStorage();
+                    renderTable();
+                    updateStats();
+                    populateJobDropdown();
+                    
+                    showImportStatus(`Successfully imported ${importedJobs.length} jobs!`, 'success');
+                    fileInput.value = '';
+                    
+                } catch (error) {
+                    console.error('Import error:', error);
+                    showImportStatus('Error importing file. Please check the format and try again.', 'error');
+                }
+            };
+
+            if (file.name.toLowerCase().endsWith('.csv')) {
+                reader.readAsText(file);
+            } else {
+                reader.readAsBinaryString(file);
+            }
+        }
+
+        function showImportStatus(message, type) {
+            const statusDiv = document.getElementById('importStatus');
+            statusDiv.innerHTML = `<div class="import-status import-${type}">${message}</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        document.getElementById('jobForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const jobData = {
+                name: formData.get('name'),
+                property: formData.get('property'),
+                flatUnit: formData.get('flatUnit'),
+                contact: formData.get('contact'),
+                email: formData.get('email'),
+                description: formData.get('description'),
+                company: formData.get('company'),
+                priority: formData.get('priority'),
+                status: formData.get('status'),
+                approved: formData.get('approved'),
+                repairCosts: parseFloat(formData.get('repairCosts')) || 0,
+                photos: [],
+                invoiceFile: null
+            };
+
+            const photoFiles = document.getElementById('photos').files;
+            const invoiceFile = document.getElementById('invoiceFile').files[0];
+            
+            const photoPromises = Array.from(photoFiles).map(file => {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            const invoicePromise = invoiceFile ? new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(invoiceFile);
+            }) : Promise.resolve(null);
+
+            Promise.all([...photoPromises, invoicePromise]).then(results => {
+                const photos = results.slice(0, -1);
+                const invoice = results[results.length - 1];
+                
+                if (editingJobId) {
+                    const jobIndex = jobs.findIndex(job => job.id === editingJobId);
+                    const existingPhotos = jobs[jobIndex].photos || [];
+                    jobData.photos = [...existingPhotos, ...photos];
+                    if (invoice) jobData.invoiceFile = invoice;
+                    jobs[jobIndex] = { ...jobs[jobIndex], ...jobData };
+                    saveToLocalStorage();
+                } else {
+                    jobData.photos = photos;
+                    if (invoice) jobData.invoiceFile = invoice;
+                    const newJob = {
+                        id: jobs.length > 0 ? Math.max(...jobs.map(j => j.id)) + 1 : 1,
+                        dateCreated: new Date().toISOString().split('T')[0],
+                        ...jobData
+                    };
+                    jobs.push(newJob);
+                    saveToLocalStorage();
+                }
+
+                renderTable();
+                updateStats();
+                populateJobDropdown();
+                closeModal();
+            });
+        });
+
+        document.getElementById('invoiceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const invoiceFile = document.getElementById('invoiceDocument').files[0];
+            
+            if (!invoiceFile) {
+                alert('Please select an invoice document');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const newInvoice = {
+                    id: invoices.length > 0 ? Math.max(...invoices.map(i => i.id)) + 1 : 1,
+                    jobId: parseInt(formData.get('invoiceJobId')),
+                    amount: parseFloat(formData.get('invoiceAmount')),
+                    date: new Date().toISOString().split('T')[0],
+                    document: e.target.result
+                };
+
+                invoices.push(newInvoice);
+                saveToLocalStorage();
+                renderInvoicesTable();
+                closeInvoiceModal();
+            };
+            reader.readAsDataURL(invoiceFile);
+        });
+
+        document.getElementById('photos').addEventListener('change', function(e) {
+            const photoPreview = document.getElementById('photoPreview');
+            photoPreview.innerHTML = '';
+            
+            Array.from(e.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    photoPreview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        function searchTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#tableBody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const matchesSearch = text.includes(searchTerm);
+                const isCompleted = row.querySelector('.status-completed') !== null;
+                
+                if (matchesSearch && !(hideCompletedJobs && isCompleted)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function toggleCompletedJobs() {
+            hideCompletedJobs = document.getElementById('hideCompleted').checked;
+            renderTable();
+            
+            const searchTerm = document.getElementById('searchInput').value;
+            if (searchTerm) {
+                searchTable();
+            }
+            
+            if (filtersVisible) {
+                applyFilters();
+            }
+        }
+
+        function exportToCSV() {
+            const headers = [
+                'Job ID', 'Date Created', 'Name', 'Property', 'Flat/Unit', 'Contact', 'Email', 
+                'Description', 'Company', 'Priority', 'Status', 'Approved', 'Repair Costs'
+            ];
+            const csvContent = [
+                headers.join(','),
+                ...jobs.map(job => [
+                    job.id,
+                    job.dateCreated,
+                    `"${job.name}"`,
+                    `"${job.property}"`,
+                    `"${job.flatUnit || ''}"`,
+                    job.contact,
+                    job.email,
+                    `"${job.description}"`,
+                    `"${job.company}"`,
+                    job.priority,
+                    job.status,
+                    job.approved,
+                    job.repairCosts || 0
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'maintenance_jobs_enhanced.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function exportInvoices() {
+            if (invoices.length === 0) {
+                alert('No invoices to export');
+                return;
+            }
+
+            const headers = ['Invoice ID', 'Job ID', 'Property', 'Tenant Name', 'Company', 'Amount', 'Date'];
+            const csvContent = [
+                headers.join(','),
+                ...invoices.map(invoice => {
+                    const job = jobs.find(j => j.id === invoice.jobId);
+                    return [
+                        invoice.id,
+                        invoice.jobId,
+                        `"${job ? job.property : 'N/A'}"`,
+                        `"${job ? job.name : 'N/A'}"`,
+                        `"${job ? job.company : 'N/A'}"`,
+                        invoice.amount,
+                        invoice.date
+                    ].join(',');
+                })
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'invoices.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const jobModal = document.getElementById('jobModal');
+            const invoiceModal = document.getElementById('invoiceModal');
+            if (event.target === jobModal) {
+                closeModal();
+            }
+            if (event.target === invoiceModal) {
+                closeInvoiceModal();
+            }
+        }
+
+        // Local Storage Functions
+        function saveToLocalStorage() {
+            try {
+                const data = {
+                    jobs: jobs,
+                    invoices: invoices,
+                    lastSaved: new Date().toISOString()
+                };
+                localStorage.setItem('maintenanceTrackerData', JSON.stringify(data));
+                showSaveStatus('Data saved successfully!', 'success');
+            } catch (error) {
+                console.error('Error saving to local storage:', error);
+                showSaveStatus('Error saving data locally', 'error');
+            }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const savedData = localStorage.getItem('maintenanceTrackerData');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    jobs = data.jobs || [];
+                    invoices = data.invoices || [];
+                    
+                    // If no data exists, load sample data
+                    if (jobs.length === 0) {
+                        initializeWithSampleData();
+                    } else {
+                        renderTable();
+                        updateStats();
+                        populateJobDropdown();
+                        if (document.getElementById('invoicesTab').classList.contains('active')) {
+                            renderInvoicesTable();
+                        }
+                    }
+                    
+                    showSaveStatus(`Data loaded! Last saved: ${new Date(data.lastSaved).toLocaleString()}`, 'success');
+                    return true;
+                }
+            } catch (error) {
+                console.error('Error loading from local storage:', error);
+                showSaveStatus('Error loading saved data', 'error');
+            }
+            return false;
+        }
+
+        function exportDataBackup() {
+            const data = {
+                jobs: jobs,
+                invoices: invoices,
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            const jsonContent = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonContent], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `maintenance_tracker_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function importDataBackup() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.jobs && Array.isArray(data.jobs)) {
+                            if (confirm('This will replace all current data. Are you sure?')) {
+                                jobs = data.jobs;
+                                invoices = data.invoices || [];
+                                saveToLocalStorage();
+                                renderTable();
+                                updateStats();
+                                populateJobDropdown();
+                                renderInvoicesTable();
+                                showSaveStatus('Backup imported successfully!', 'success');
+                            }
+                        } else {
+                            showSaveStatus('Invalid backup file format', 'error');
+                        }
+                    } catch (error) {
+                        showSaveStatus('Error reading backup file', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear ALL data? This cannot be undone!')) {
+                if (confirm('This will delete all jobs and invoices. Are you absolutely sure?')) {
+                    localStorage.removeItem('maintenanceTrackerData');
+                    jobs = [];
+                    invoices = [];
+                    renderTable();
+                    renderInvoicesTable();
+                    updateStats();
+                    populateJobDropdown();
+                    showSaveStatus('All data cleared', 'success');
+                }
+            }
+        }
+
+        function showSaveStatus(message, type) {
+            // Create or update save status element
+            let statusDiv = document.getElementById('saveStatus');
+            if (!statusDiv) {
+                statusDiv = document.createElement('div');
+                statusDiv.id = 'saveStatus';
+                statusDiv.style.position = 'fixed';
+                statusDiv.style.top = '20px';
+                statusDiv.style.right = '20px';
+                statusDiv.style.zIndex = '9999';
+                statusDiv.style.maxWidth = '300px';
+                document.body.appendChild(statusDiv);
+            }
+            
+            statusDiv.innerHTML = `<div class="import-status import-${type}">${message}</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 3000);
+        }
+
+        // Auto-save functionality
+        function setupAutoSave() {
+            // Save data whenever jobs or invoices are modified
+            const originalPush = Array.prototype.push;
+            const originalSplice = Array.prototype.splice;
+            
+            // Override array methods to trigger auto-save
+            jobs.push = function(...args) {
+                const result = originalPush.apply(this, args);
+                saveToLocalStorage();
+                return result;
+            };
+            
+            jobs.splice = function(...args) {
+                const result = originalSplice.apply(this, args);
+                saveToLocalStorage();
+                return result;
+            };
+            
+            invoices.push = function(...args) {
+                const result = originalPush.apply(this, args);
+                saveToLocalStorage();
+                return result;
+            };
+            
+            invoices.splice = function(...args) {
+                const result = originalSplice.apply(this, args);
+                saveToLocalStorage();
+                return result;
+            };
+        }
+
+        // Add data management buttons to the interface
+        function addDataManagementControls() {
+            // Add to maintenance tab controls
+            const maintenanceControls = document.querySelector('#maintenanceTab .controls');
+            const dataManagementHTML = `
+                <button class="btn btn-info" onclick="saveToLocalStorage()">Save Data</button>
+                <button class="btn btn-success" onclick="exportDataBackup()">Backup Data</button>
+                <div class="file-input-wrapper">
+                    <button class="btn btn-primary" onclick="importDataBackup()">Restore Backup</button>
+                </div>
+                <button class="btn btn-secondary" onclick="clearAllData()" style="background: linear-gradient(45deg, #dc3545, #c82333);">Clear All Data</button>
+            `;
+            maintenanceControls.insertAdjacentHTML('beforeend', dataManagementHTML);
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePropertyDropdowns();
+            
+            // Try to load saved data first
+            const hasData = loadFromLocalStorage();
+            
+            // If no saved data, initialize with sample data
+            if (!hasData) {
+                initializeWithSampleData();
+                saveToLocalStorage(); // Save the sample data
+            }
+            
+            // Setup auto-save functionality
+            setupAutoSave();
+            
+            // Add data management controls
+            addDataManagementControls();
+        });
+    </script>
+</body>
+</html>
